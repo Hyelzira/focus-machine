@@ -1,86 +1,135 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import SymbolTile from '../components/SymbolTile';
+import MahjongTile from '../components/MahjongTile';
 
-const SHAPES = ['circle', 'square', 'diamond', 'triangle', 'hexagon'];
+// All available tiles from our new library
+const ALL_TILES = ['circle1', 'circle2', 'circle3', 'bamboo1', 'bamboo2', 'character1', 'east', 'south', 'red', 'green'];
 
 const Training = () => {
   const navigate = useNavigate();
   const location = useLocation();
-
-  // 1. Receive the pre-session ratings from the Check-in page
   const preSessionData = location.state || { ratings: {}, note: '' };
 
-  const [targetShape, setTargetShape] = useState('circle');
+  const [targetTile, setTargetTile] = useState('circle1');
   const [options, setOptions] = useState([]);
   const [timeElapsed, setTimeElapsed] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(5); // 5 second countdown
   const [trials, setTrials] = useState(0);
   const [correct, setCorrect] = useState(0);
-  const [pulse, setPulse] = useState(false);
-  const [isSelecting, setIsSelecting] = useState(false);
-  
-  // Track response times for the Consistency metric
   const [responseTimes, setResponseTimes] = useState([]);
   const [lastClickTime, setLastClickTime] = useState(Date.now());
+  const [isSelecting, setIsSelecting] = useState(false);
 
+  // 1. Play Bell Sound
+  const playBell = () => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      const context = new AudioContext();
+      const oscillator = context.createOscillator();
+      const gainNode = context.createGain();
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(600, context.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(800, context.currentTime + 0.1);
+      
+      gainNode.gain.setValueAtTime(0.3, context.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 1);
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
+      oscillator.start();
+      oscillator.stop(context.currentTime + 1);
+    } catch (e) {
+      console.log("Audio not supported");
+    }
+  };
+
+  // 2. Overall Session Timer (Counts up)
   useEffect(() => {
     const timer = setInterval(() => setTimeElapsed((prev) => prev + 1), 1000);
     return () => clearInterval(timer);
   }, []);
 
+  // 3. Round Countdown (5 seconds per round)
+  useEffect(() => {
+    if (isSelecting) return; // Pause timer if generating a new set
+
+    if (timeLeft <= 0) {
+      // Time is up! Treat as incorrect (timeout)
+      handleTimeout();
+      return;
+    }
+
+    const countdown = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(countdown);
+  }, [timeLeft, isSelecting]);
+
+  // 4. Start the first round
   useEffect(() => {
     generateNewSet();
   }, []);
 
-  const formatTime = (totalSeconds) => {
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  };
-
-  const triggerPulse = () => {
-    setPulse(true);
-    setTimeout(() => setPulse(false), 400);
-  };
-
   const generateNewSet = () => {
-    const randomTarget = SHAPES[Math.floor(Math.random() * SHAPES.length)];
-    setTargetShape(randomTarget);
+    setIsSelecting(true);
+    setTimeLeft(5); // Reset timer to 5 seconds
+    
+    // Pick a random target tile
+    const randomTarget = ALL_TILES[Math.floor(Math.random() * ALL_TILES.length)];
+    setTargetTile(randomTarget);
 
+    // Generate 3 distinct distractors
     let distractors = [];
     while (distractors.length < 3) {
-      const randomShape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
-      if (randomShape !== randomTarget && !distractors.includes(randomShape)) {
-        distractors.push(randomShape);
+      const randomTile = ALL_TILES[Math.floor(Math.random() * ALL_TILES.length)];
+      if (randomTile !== randomTarget && !distractors.includes(randomTile)) {
+        distractors.push(randomTile);
       }
     }
+
     setOptions([randomTarget, ...distractors].sort(() => Math.random() - 0.5));
-    triggerPulse();
-    
     setLastClickTime(Date.now());
+    setIsSelecting(false);
   };
 
-  const handleSelect = (selectedShape) => {
+  const handleTimeout = () => {
+    // Bell rings when time runs out
+    playBell();
+    
+    // Register as a trial (but incorrect)
+    setTrials((prev) => prev + 1);
+    setResponseTimes((prev) => [...prev, 5000]); // 5000ms for timeout
+    
+    // Move to next set after a brief pause
+    setTimeout(() => {
+      generateNewSet();
+    }, 800);
+  };
+
+  const handleSelect = (selectedTile) => {
     if (isSelecting) return;
     setIsSelecting(true); 
     
+    // Calculate response time
     const now = Date.now();
     const rt = now - lastClickTime;
     setResponseTimes((prev) => [...prev, rt]);
 
     setTrials((prev) => prev + 1);
-    if (selectedShape === targetShape) {
+    if (selectedTile === targetTile) {
       setCorrect((prev) => prev + 1);
+      playBell(); // Play bell on correct answer too (optional)
     }
     
     setTimeout(() => {
       generateNewSet();
-      setIsSelecting(false);
     }, 200);
   };
 
   const handleSubmit = () => {
-    // --- CALCULATE FOCUS LEVEL (PDF Section 6) ---
+    // PDF Formula Calculation
     const accuracyPercentage = trials > 0 ? (correct / trials) * 100 : 0;
     const accuracyComponent = accuracyPercentage / 100;
 
@@ -89,103 +138,92 @@ const Training = () => {
       const mean = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
       const variance = responseTimes.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / responseTimes.length;
       const sd = Math.sqrt(variance);
-      const targetSd = 1000; 
-      consistencyComponent = 1 - Math.min(1, sd / targetSd);
+      consistencyComponent = 1 - Math.min(1, sd / 1000);
     }
 
     const durationComponent = Math.min(1, timeElapsed / 420);
     const rawScore = (0.45 * accuracyComponent) + (0.30 * consistencyComponent) + (0.25 * durationComponent);
     let focusLevel = Math.round(rawScore * 9) + 1;
 
-    if (trials < 5) {
-      focusLevel = Math.min(4, focusLevel);
-    }
+    if (trials < 5) focusLevel = Math.min(4, focusLevel);
 
-    // 2. Bundle ALL data together
     const finalSessionData = {
       duration: timeElapsed, 
       accuracy: Math.round(accuracyPercentage),
       focusLevel: focusLevel,
       trials: trials,
-      preRatings: preSessionData.ratings, // Pass the pre-ratings forward
+      preRatings: preSessionData.ratings,
       preNote: preSessionData.note
     };
 
-    // 3. Save to LocalStorage (for the Progress page history)
     try {
       const existingHistory = JSON.parse(localStorage.getItem('sessionHistory') || '[]');
-      const newSessionRecord = {
-        id: Date.now(),
-        date: new Date().toISOString(),
-        ...finalSessionData
-      };
-      localStorage.setItem('sessionHistory', JSON.stringify([...existingHistory, newSessionRecord]));
-    } catch (error) {
-      console.error("Failed to save session to local storage", error);
-    }
+      localStorage.setItem('sessionHistory', JSON.stringify([...existingHistory, { id: Date.now(), date: new Date().toISOString(), ...finalSessionData }]));
+    } catch (e) {}
 
-    // 4. Send to Results page
     navigate('/results', { state: finalSessionData });
   };
 
-  return (
-    <div className="min-h-screen w-full relative flex flex-col items-center justify-between py-8 px-4 select-none bg-[#F5F2EB] dark:bg-gray-900 transition-colors duration-500 overflow-hidden">
-      
-      {/* Ambient Background Glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-[#4A7C59]/10 dark:bg-[#4A7C59]/20 rounded-full blur-[100px] pointer-events-none transition-colors duration-500"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-[#A3B18A]/20 dark:bg-[#A3B18A]/10 rounded-full blur-[100px] pointer-events-none transition-colors duration-500"></div>
+  const formatTime = (totalSeconds) => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
 
+  return (
+    <div className="min-h-screen w-full relative flex flex-col items-center justify-between py-8 px-4 select-none bg-[#F5F2EB] dark:bg-gray-900 transition-colors duration-500 overflow-hidden font-['Times_New_Roman',_Times,_serif]">
+      
       {/* Top Bar */}
       <div className="w-full max-w-2xl flex justify-between items-center px-4 relative z-10">
-        <button 
-          onClick={() => navigate('/')} 
-          className="text-[#607367] dark:text-gray-400 hover:text-[#2C3E35] dark:hover:text-white font-bold transition-colors bg-white/50 dark:bg-gray-800/50 px-4 py-2 rounded-xl backdrop-blur-sm shadow-sm font-sans"
-        >
+        <button onClick={() => navigate('/')} className="text-[#607367] hover:text-[#2C3E35] font-bold bg-white/50 px-4 py-2 rounded-xl backdrop-blur-sm shadow-sm font-sans">
           ✕ Cancel
         </button>
         
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-[#E2DFD5] dark:border-gray-700 px-8 py-2.5 rounded-full shadow-sm">
-          <span className="text-xl font-bold text-[#2C3E35] dark:text-white font-mono tracking-widest">
+        <div className="bg-white/80 backdrop-blur-md border border-[#E2DFD5] px-8 py-2.5 rounded-full shadow-sm">
+          <span className="text-xl font-bold text-[#2C3E35] font-mono tracking-widest">
             {formatTime(timeElapsed)}
           </span>
         </div>
 
-        <div className="w-[88px]"></div> 
+        {/* 5-Second Countdown Bar */}
+        <div className="w-24 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+          <div 
+            className={`h-2.5 rounded-full transition-all duration-1000 ease-linear ${timeLeft <= 2 ? 'bg-red-500' : 'bg-[#4A7C59]'}`}
+            style={{ width: `${(timeLeft / 5) * 100}%` }}
+          ></div>
+        </div>
       </div>
 
       {/* Main Game Area */}
       <div className="flex flex-col items-center justify-center flex-1 w-full max-w-2xl gap-12 relative z-10 mt-8">
         
-        <h2 className="text-[#607367] dark:text-gray-300 font-bold text-lg tracking-wide uppercase font-sans">
-          Find the matching symbol
+        <h2 className="text-[#607367] font-bold text-lg tracking-wide uppercase font-sans">
+          Find the matching tile
         </h2>
 
-        {/* Target Symbol */}
-        <div className={`relative transition-all duration-300 ${pulse ? 'scale-105' : 'scale-100'}`}>
-          <div className="absolute inset-0 bg-[#4A7C59]/20 dark:bg-[#4A7C59]/40 blur-xl rounded-3xl"></div>
-          <SymbolTile shape={targetShape} size={140} isTarget={true} />
+        {/* Target Tile */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-[#4A7C59]/20 blur-xl rounded-3xl"></div>
+          <MahjongTile type={targetTile} size={140} isTarget={true} />
         </div>
 
         {/* Options Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 w-full justify-items-center mt-4">
-          {options.map((shape, index) => (
-            <SymbolTile 
+          {options.map((tile, index) => (
+            <MahjongTile 
               key={index} 
-              shape={shape} 
+              type={tile} 
               size={90} 
-              onClick={() => handleSelect(shape)} 
+              onClick={() => handleSelect(tile)} 
             />
           ))}
         </div>
 
       </div>
 
-      {/* Bottom Bar: Submit */}
+      {/* Submit Button */}
       <div className="w-full max-w-md px-4 pb-6 relative z-10 mt-12">
-        <button 
-          onClick={handleSubmit} 
-          className="w-full bg-[#4A7C59] hover:bg-[#3D664A] text-white font-sans font-bold py-4 rounded-2xl shadow-lg shadow-[#4A7C59]/30 transition-all hover:-translate-y-1 text-lg tracking-wide"
-        >
+        <button onClick={handleSubmit} className="w-full bg-[#4A7C59] hover:bg-[#3D664A] text-white font-sans font-bold py-4 rounded-2xl shadow-lg transition-all hover:-translate-y-1 text-lg">
           Submit Session
         </button>
       </div>
