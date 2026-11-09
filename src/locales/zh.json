@@ -1,0 +1,5 @@
+{
+  "nav": { "home": "首页", "progress": "进度", "settings": "设置", "safety": "安全与帮助" },
+  "settings": { "title": "设置", "subtitle": "自定义您的 Focus Machine 体验。", "langRegion": "语言与地区", "appLang": "应用语言", "appLangSub": "选择您偏好的语言。" },
+  "home": { "heroTitle": "一点专注的空间。", "heroSub": "训练您的注意力，检查自己，并观察时间的进步。", "startBtn": "开始专注会话" }
+}

@@ -1,0 +1,50 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "about": "Acerca de",
+    "progress": "Progreso",
+    "settings": "Ajustes",
+    "safety": "Seguridad y Ayuda"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "subtitle": "Personaliza tu experiencia en Focus Machine.",
+    "appearance": "Apariencia",
+    "darkMode": "Modo Oscuro",
+    "darkModeSub": "Cambia entre temas claros y oscuros.",
+    "langRegion": "Idioma y Región",
+    "appLang": "Idioma de la App",
+    "appLangSub": "Elige tu idioma preferido.",
+    "region": "Región",
+    "regionSub": "Se usa para mostrar líneas de crisis locales."
+  },
+  "home": {
+    "heroTitle": "Un espacio tranquilo en un mundo ruidoso.",
+    "heroSub": "Entrena tu atención con suavidad, revisa cómo te sientes y observa cómo crece tu concentración.",
+    "startBtn": "Comenzar Tu Sesión",
+    "viewProgressBtn": "Ver Progreso",
+    "introTitle": "Descubre por qué el entrenamiento de atención es la forma más silenciosa de autocuidado.",
+    "introSub": "Así como una visita al spa restaura el cuerpo, unos minutos de atención enfocada restauran la mente.",
+    "checkinTitle": "Un momento para ti",
+    "checkinSub": "¿Cómo te sientes ahora mismo? Sin juicios. Solo observa.",
+    "recentSession": "Sesión Reciente",
+    "steady": "Estable",
+    "quietTitle": "Un espacio diseñado para la calma.",
+    "quietSub": "Como una sala de meditación o un rincón tranquilo de un spa, Focus Machine le da a tu atención un lugar para descansar.",
+    "readyTitle": "¿Listo para comenzar?",
+    "readySub": "Tómate unos minutos hoy para construir un tú más tranquilo y enfocado.",
+    "readyBtn": "Comienza Tu Práctica"
+  },
+  "about": {
+    "philosophy": "Nuestra Filosofía",
+    "title": "La forma más silenciosa de autocuidado.",
+    "subtitle": "Focus Machine es una herramienta de entrenamiento visual continuo y a tu propio ritmo diseñada para ayudarte a traer tu atención de vuelta al momento presente.",
+    "whyTitle": "Por qué lo construimos",
+    "whoTitle": "Para quién es",
+    "principlesTitle": "Nuestros Principios de Diseño",
+    "reminderTitle": "Un Recordatorio Amable",
+    "readyTitle": "¿Listo para probarlo?",
+    "readySub": "Tómate unos minutos hoy para construir un tú más tranquilo.",
+    "startBtn": "Comenzar una Sesión"
+  }
+}

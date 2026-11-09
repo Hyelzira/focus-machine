@@ -1,0 +1,50 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "progress": "Progress",
+    "settings": "Settings",
+    "safety": "Safety & Help"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Customize your Focus Machine experience.",
+    "appearance": "Appearance",
+    "darkMode": "Dark Mode",
+    "darkModeSub": "Switch between light and dark themes.",
+    "langRegion": "Language & Region",
+    "appLang": "App Language",
+    "appLangSub": "Choose your preferred language.",
+    "region": "Region",
+    "regionSub": "Used to show local crisis hotlines in Safety."
+  },
+  "home": {
+    "heroTitle": "A quiet space in a noisy world.",
+    "heroSub": "Train your attention gently, check in with yourself, and watch your focus grow over time. No pressure, no streaks—just a few minutes to come back to yourself.",
+    "startBtn": "Begin Your Session",
+    "viewProgressBtn": "View Progress",
+    "introTitle": "Come see why attention training is the quietest form of self-care.",
+    "introSub": "Just as a spa visit restores the body, a few minutes of focused attention restores the mind. Focus Machine is your private space to pause, notice, and gently train your ability to stay present.",
+    "checkinTitle": "A moment for yourself",
+    "checkinSub": "How are you feeling right now? No judgment. Just notice.",
+    "recentSession": "Recent Session",
+    "steady": "Steady",
+    "quietTitle": "A space designed for quiet.",
+    "quietSub": "Like a meditation room or a quiet corner of a spa, Focus Machine gives your attention a place to rest. No streaks. No pressure. Just a few minutes of gentle practice.",
+    "readyTitle": "Ready to begin?",
+    "readySub": "Take a few minutes today to build a calmer, more focused you.",
+    "readyBtn": "Start Your Practice"
+  },
+  "about": {
+    "philosophy": "Our Philosophy",
+    "title": "The quietest form of self-care.",
+    "subtitle": "Focus Machine is a continuous, self-paced visual training tool designed to help you bring your attention back to the present moment. It’s not a medical treatment—it’s simply a calm, honest space to notice your mind and train your focus.",
+    "whyTitle": "Why we built this",
+    "whoTitle": "Who it's for",
+    "principlesTitle": "Our Design Principles",
+    "reminderTitle": "A Gentle Reminder",
+    "readyTitle": "Ready to try it?",
+    "readySub": "Take a few minutes today to build a calmer, more focused you.",
+    "startBtn": "Start a Session"
+  }
+}

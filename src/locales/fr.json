@@ -1,0 +1,5 @@
+{
+  "nav": { "home": "Accueil", "progress": "Progrès", "settings": "Paramètres", "safety": "Sécurité et Aide" },
+  "settings": { "title": "Paramètres", "subtitle": "Personnalisez votre expérience Focus Machine.", "langRegion": "Langue et Région", "appLang": "Langue de l'application", "appLangSub": "Choisissez votre langue préférée." },
+  "home": { "heroTitle": "Un petit espace pour se concentrer.", "heroSub": "Entraînez votre attention, faites le point et constatez vos progrès.", "startBtn": "Commencer la session" }
+}

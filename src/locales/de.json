@@ -1,0 +1,5 @@
+{
+  "nav": { "home": "Startseite", "progress": "Fortschritt", "settings": "Einstellungen", "safety": "Sicherheit & Hilfe" },
+  "settings": { "title": "Einstellungen", "subtitle": "Passen Sie Ihr Focus Machine-Erlebnis an.", "langRegion": "Sprache & Region", "appLang": "App-Sprache", "appLangSub": "Wählen Sie Ihre bevorzugte Sprache." },
+  "home": { "heroTitle": "Ein kleiner Raum zum Fokussieren.", "heroSub": "Trainieren Sie Ihre Aufmerksamkeit und sehen Sie Ihre Fortschritte.", "startBtn": "Fokus-Sitzung starten" }
+}
