@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
@@ -6,18 +6,24 @@ import { useTranslation } from 'react-i18next';
 const Settings = () => {
   const navigate = useNavigate();
   
-  const [soundLevel, setSoundLevel] = useState('Medium');
+  // Load saved preferences from localStorage on mount
+  const [soundLevel, setSoundLevel] = useState(localStorage.getItem('soundLevel') || 'Medium');
   const [shareAnalytics, setShareAnalytics] = useState(false);
   const [country, setCountry] = useState('United States');
+  const [gentleMode, setGentleMode] = useState(localStorage.getItem('gentleMode') === 'true');
+  const [symbolStyle, setSymbolStyle] = useState(localStorage.getItem('symbolStyle') || 'mahjong');
 
   const { t, i18n } = useTranslation();
   const { theme, setTheme } = useContext(ThemeContext);
 
+  // Save preferences to localStorage when they change
+  useEffect(() => { localStorage.setItem('soundLevel', soundLevel); }, [soundLevel]);
+  useEffect(() => { localStorage.setItem('gentleMode', gentleMode.toString()); }, [gentleMode]);
+  useEffect(() => { localStorage.setItem('symbolStyle', symbolStyle); }, [symbolStyle]);
+
   const handleLanguageChange = (e) => {
     const newLang = e.target.value;
     i18n.changeLanguage(newLang);
-    
-    // Auto-switch direction for Arabic (RTL)
     if (newLang === 'ar') {
       document.documentElement.dir = 'rtl';
     } else {
@@ -30,11 +36,10 @@ const Settings = () => {
     navigate('/login');
   };
 
-  // 1. Fully functional Clear Data button
   const handleClearData = () => {
     if(window.confirm("Are you sure? This will delete all your local progress and cannot be undone.")) {
-      localStorage.removeItem('sessionHistory'); // Deletes progress history
-      localStorage.removeItem('userType'); // Resets guest/member status
+      localStorage.removeItem('sessionHistory'); 
+      localStorage.removeItem('userType'); 
       alert("Local data cleared. Refresh the page to start fresh.");
     }
   };
@@ -79,7 +84,6 @@ const Settings = () => {
           <h2 className="text-2xl font-bold mb-6">{t('settings.langRegion')}</h2>
           
           <div className="flex flex-col gap-5">
-            {/* Language Selector */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
               <div>
                 <strong className="block text-lg">{t('settings.appLang')}</strong>
@@ -101,7 +105,6 @@ const Settings = () => {
               </select>
             </div>
 
-            {/* Country Selector */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 pt-4 border-t border-[#F5F2EB] dark:border-gray-700">
               <div>
                 <strong className="block text-lg">{t('settings.region')}</strong>
@@ -122,7 +125,58 @@ const Settings = () => {
           </div>
         </div>
 
-        {/* 3. Sound & Feedback */}
+        {/* 3. NEW: Practice Mode (Gentle Start & Symbol Style) */}
+        <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 md:p-8 border border-[#E2DFD5] dark:border-gray-700 shadow-sm transition-colors duration-300">
+          <h2 className="text-2xl font-bold mb-6">Practice Mode</h2>
+          
+          <div className="flex flex-col gap-6">
+            {/* Gentle Mode Toggle */}
+            <div className="flex items-center justify-between">
+              <div>
+                <strong className="block text-lg">Very Gentle Start</strong>
+                <span className="text-base text-[#607367] dark:text-gray-400">Slower symbol changes (8s) and more forgiving rules.</span>
+              </div>
+              <button 
+                onClick={() => setGentleMode(!gentleMode)}
+                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-300 focus:outline-none ${
+                  gentleMode ? 'bg-[#4A7C59]' : 'bg-[#E2DFD5] dark:bg-gray-600'
+                }`}
+              >
+                <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-sm transition-transform duration-300 ${
+                  gentleMode ? 'translate-x-7' : 'translate-x-1'
+                }`} />
+              </button>
+            </div>
+
+            {/* Symbol Style Selector */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 pt-4 border-t border-[#F5F2EB] dark:border-gray-700">
+              <div>
+                <strong className="block text-lg">Symbol Style</strong>
+                <span className="text-base text-[#607367] dark:text-gray-400">Choose your preferred visual training style.</span>
+              </div>
+              <div className="flex bg-[#F5F2EB] dark:bg-gray-700 p-1 rounded-xl font-sans">
+                <button
+                  onClick={() => setSymbolStyle('mahjong')}
+                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                    symbolStyle === 'mahjong' ? 'bg-white dark:bg-gray-600 text-[#4A7C59] shadow-sm' : 'text-[#607367]'
+                  }`}
+                >
+                  Mahjong
+                </button>
+                <button
+                  onClick={() => setSymbolStyle('geometric')}
+                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                    symbolStyle === 'geometric' ? 'bg-white dark:bg-gray-600 text-[#4A7C59] shadow-sm' : 'text-[#607367]'
+                  }`}
+                >
+                  Geometric
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 4. Sound & Feedback */}
         <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 md:p-8 border border-[#E2DFD5] dark:border-gray-700 shadow-sm transition-colors duration-300">
           <h2 className="text-2xl font-bold mb-4">Sound & Feedback</h2>
           <p className="text-base text-[#607367] dark:text-gray-400 mb-5">The bell plays when a new set of symbols appears.</p>
@@ -144,7 +198,32 @@ const Settings = () => {
           </div>
         </div>
 
-        {/* 4. Privacy, Data & Account */}
+        {/* 5. NEW: Transparency & Science Screen */}
+        <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 md:p-8 border border-[#E2DFD5] dark:border-gray-700 shadow-sm transition-colors duration-300">
+          <h2 className="text-2xl font-bold mb-4">How is Focus Level calculated?</h2>
+          <p className="text-base text-[#607367] dark:text-gray-400 mb-4">
+            We believe in transparency. Your Focus Level (1-10) is a weighted combination of three components:
+          </p>
+          <ul className="space-y-3 text-[#2C3E35] dark:text-gray-200 font-sans text-base">
+            <li className="flex justify-between border-b border-[#F5F2EB] dark:border-gray-700 pb-2">
+              <span>Accuracy (Correct matches)</span>
+              <span className="font-bold">45%</span>
+            </li>
+            <li className="flex justify-between border-b border-[#F5F2EB] dark:border-gray-700 pb-2">
+              <span>Consistency (Steady response times)</span>
+              <span className="font-bold">30%</span>
+            </li>
+            <li className="flex justify-between">
+              <span>Duration (Time practised, capped at 7 mins)</span>
+              <span className="font-bold">25%</span>
+            </li>
+          </ul>
+          <p className="text-sm text-[#607367] dark:text-gray-500 mt-4 italic">
+            Note: If you complete fewer than 5 trials, the Focus Level is capped at 4 to ensure data accuracy. This tool trains selective attention, sustained attention, and the value of noticing your internal state without trying to fix it.
+          </p>
+        </div>
+
+        {/* 6. Privacy & Data */}
         <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 md:p-8 border border-[#E2DFD5] dark:border-gray-700 shadow-sm transition-colors duration-300">
           <h2 className="text-2xl font-bold mb-4">Privacy & Data</h2>
           
@@ -183,7 +262,7 @@ const Settings = () => {
           </div>
         </div>
 
-        {/* 5. About & Safety */}
+        {/* 7. About & Safety */}
         <div className="bg-[#E8F0EA] dark:bg-gray-800/50 rounded-3xl p-6 md:p-8 transition-colors duration-300">
           <h2 className="text-2xl font-bold text-[#4A7C59] dark:text-[#A3B18A] mb-4">About</h2>
           
